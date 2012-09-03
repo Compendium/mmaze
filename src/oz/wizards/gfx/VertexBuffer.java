@@ -24,7 +24,7 @@ public class VertexBuffer {
 	
 	private Texture texture;
 	
-	public VertexBuffer (Shader s, Texture tex) {
+	public VertexBuffer (final Shader s, final Texture tex) {
 		texture = tex;
 		//buffer = ByteBuffer.allocateDirect((3*4) * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
 		buffer = ByteBuffer.allocateDirect(mMaxVertexCount * ((3*4)+(2*4)+4)).order(ByteOrder.nativeOrder());
@@ -37,24 +37,16 @@ public class VertexBuffer {
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture.texId);
 	}
-	
+
 	/**
-	 * Uses GL_QUADS, order is CCW (Counter Clockwise) example
-	 * 
+	 * Uses GL_QUADS, order is CCW (Counter Clockwise) example.
+	 * Coordinates depend on the current projection-matrix.
+	 *
 	 * 0----3
 	 * |    |
 	 * |    |
 	 * 1----2
-	 * 
-	 *  		
-	 *  	    A +y
-	 *  		|
-	 *  		|
-	 *  -x -------------> +x
-	 *  		|
-	 *  		|
-	 *  		v -y
-	 * 
+	 *
 	 * @param v The current vertex
 	 */
 	public void add(Vector3f v, Vector2f texc, float id) {
@@ -71,7 +63,7 @@ public class VertexBuffer {
 			//System.out.println("Buffer-resize");
 		}
 		mVertexCount++;
-		
+
 		buffer.putFloat(v.x);
 		buffer.putFloat(v.y);
 		buffer.putFloat(v.z);
@@ -79,7 +71,7 @@ public class VertexBuffer {
 		buffer.putFloat((1.f / (float)texture.height) * texc.y);
 		buffer.putFloat(id);
 	}
-	
+
 	public void upload() throws IOException{
 		if(buffer.position() == 0) {
 			System.err.println("Attempt to upload empty buffer!");
@@ -96,22 +88,22 @@ public class VertexBuffer {
 		//fixed//glVertexPointer(3, GL_FLOAT, 0, 0);
 		//glEnableVertexAttribArray(mPositionAttrib);
 		//glVertexAttribPointer(mPositionAttrib, 3, GL_FLOAT, false, 0, 0);
-		
+
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		//glDisableVertexAttribArray(mPositionAttrib);
-		
+
 		System.out.println("Uploaded buffer " + mVboid + " with " + this.buffer.limit() / 1000.0 + "k bytes");
 }
 
 	public void render(int dataType, Vector3f camPos){
-		if(dataType == GL_POINTS) {
+		if (dataType == GL_POINTS) {
 			glEnable(GL_POINT_SPRITE);
 			glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
 		}
 		glUniform1i(mTexUniform, 0);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture.texId);
-		
+
 		//System.out.println(mVertexCount + "");
 		glUniform3f(mCamUniform, -camPos.x, -camPos.y, -camPos.z);
 		glEnableVertexAttribArray(mPositionAttrib);

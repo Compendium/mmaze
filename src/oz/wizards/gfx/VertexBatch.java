@@ -18,8 +18,8 @@ import static org.lwjgl.opengl.GL13.*;
 import static org.lwjgl.opengl.GL20.*;
 
 /**
- * A vertex batch, that uses vertex arrays to draw
- * 
+ * A vertex batch, that uses vertex arrays to draw.
+ *
  * @author compendium
  */
 public class VertexBatch {
@@ -75,7 +75,7 @@ public class VertexBatch {
 	 * @param rgb
 	 *            The tinting color
 	 */
-	public void putQuad(Texture tex, Vector3f a, Vector3f b, Vector3f c,
+	public final void putQuad(Texture tex, Vector3f a, Vector3f b, Vector3f c,
 			Vector3f d, Vector2f uvmin, Vector2f uvmax, Vector3f rgb) {
 		if (mVertexMap.containsKey(tex.texId) == false) {
 			TextureInfo ti = new TextureInfo();
@@ -248,7 +248,18 @@ public class VertexBatch {
 			mVertexMap.put(tex.texId, ti);
 		}
 
-		// TODO add adding of more obj's
+		if (mVertexMap.get(tex.texId).vertexCount + obj.faces.size() * 3 >= mVertexMap.get(tex.texId).vertexCapacity){
+			mVertexMap.get(tex.texId).vertexCapacity += obj.faces.size() * 3;
+			FloatBuffer currentBuffer = mVertexMap.get(tex.texId).vertices;
+			FloatBuffer newbuffer = ByteBuffer
+					.allocateDirect(
+							(3 * FLOAT_SIZE_BYTES + 3 * FLOAT_SIZE_BYTES + 2 * FLOAT_SIZE_BYTES)
+									* mVertexMap.get(tex.texId).vertexCapacity)
+					.order(ByteOrder.nativeOrder()).asFloatBuffer();
+			currentBuffer.flip();
+			newbuffer.put(currentBuffer);
+			mVertexMap.get(tex.texId).vertices = newbuffer;
+		}
 
 		TextureInfo ti = mVertexMap.get(tex.texId);
 		for (int i = 0; i < obj.faces.size(); i++) {

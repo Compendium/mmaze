@@ -209,7 +209,7 @@ public class Game implements Runnable {
 			translation = nextTranslation;
 		}
 		while(Main.networkManager.receivedPackages.size() != 0) {
-			Package recv = Main.networkManager.receivedPackages.pop().p;
+			Package recv = Main.networkManager.receivedPackages.pop();
 			Unpacker.unpackString(recv);
 			Unpacker.unpackLong(recv);
 			byte tag = Unpacker.unpackByte(recv);
@@ -241,7 +241,10 @@ public class Game implements Runnable {
 			Packer.packFloat(p, translation.x);
 			Packer.packFloat(p, translation.y);
 			Packer.packFloat(p, translation.z);
-			Main.networkManager.getNetwork().send(serverAddr, serverPort, p);
+			
+			p.address = serverAddr;
+			p.port = serverPort;
+			Main.networkManager.queue(p);
 		}
 	}
 
@@ -334,7 +337,10 @@ public class Game implements Runnable {
 			e2.printStackTrace();
 		}
 		serverPort = 4182;
-		Main.networkManager.getNetwork().send(serverAddr, serverPort, registerPackage);
+		
+		registerPackage.address = serverAddr;
+		registerPackage.port = serverPort;
+		Main.networkManager.getNetwork().send(registerPackage);
 		
 		try {
 			Display.setDisplayMode(new DisplayMode(1024, 768));
@@ -432,7 +438,7 @@ public class Game implements Runnable {
 			}
 		}
 		
-		Package rp = nm.receivedPackages.pop().p;
+		Package rp = nm.receivedPackages.pop();
 		Unpacker.unpackString(rp);
 		Unpacker.unpackLong(rp);
 		System.out.println("recvd: " + Unpacker.unpackByte(rp));
@@ -444,7 +450,10 @@ public class Game implements Runnable {
 		req.fillHeader();
 		Packer.packByte(req, TYPE_MAPREQUEST);
 		Packer.packInt(req, clientId);
-		nm.getNetwork().send(serverAddr, serverPort, req);
+		
+		req.address = serverAddr;
+		req.port = serverPort;
+		nm.getNetwork().send(req);
 		
 		while(nm.receivedPackages.size() == 0) {
 			try {
@@ -455,7 +464,7 @@ public class Game implements Runnable {
 			}
 		}
 		
-		Package nn = nm.receivedPackages.pop().p;
+		Package nn = nm.receivedPackages.pop();
 		Unpacker.unpackString(nn);
 		Unpacker.unpackLong(nn);
 		byte t = Unpacker.unpackByte(nn);
@@ -486,7 +495,7 @@ public class Game implements Runnable {
 					Thread.sleep(10);
 				} catch (Exception e) {}
 			}
-			Package recvd = nm.receivedPackages.pop().p;
+			Package recvd = nm.receivedPackages.pop();
 			Unpacker.unpackString(recvd);
 			Unpacker.unpackLong(recvd);
 			int type = Unpacker.unpackByte(recvd);
@@ -541,7 +550,10 @@ public class Game implements Runnable {
 		Packer.packByte(p, TYPE_UNREGISTER);
 		Packer.packInt(p, clientId);
 		Main.networkManager.keepRunning = false;
-		Main.networkManager.getNetwork().send(serverAddr, serverPort, p);
+		
+		p.address = serverAddr;
+		p.port = serverPort;
+		Main.networkManager.getNetwork().send(p);
 		Main.networkManager.getNetwork().destroy();
 	}
 

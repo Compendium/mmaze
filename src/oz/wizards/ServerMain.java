@@ -70,11 +70,11 @@ public class ServerMain {
 		
 		while(true) {
 			nw.tick();
-			Packet p = nw.lastReceivedPackage;
-			String ident = Unpacker.unpackString(p.p);
+			Package p = nw.lastReceivedPackage;
+			String ident = Unpacker.unpackString(p);
 			if(ident.equals("MAZE")) {
-				long clientTime = Unpacker.unpackLong(p.p);
-				byte type = Unpacker.unpackByte(p.p);
+				long clientTime = Unpacker.unpackLong(p);
+				byte type = Unpacker.unpackByte(p);
 				
 				if(type == TYPE_REGISTER) {
 					int clientId = clients.size();
@@ -83,28 +83,29 @@ public class ServerMain {
 					newClient.lastPacketTimeClient = clientTime;
 					newClient.lastPacketTimeLocal = System.currentTimeMillis();
 					newClient.lastPacketTypeReceived = TYPE_REGISTER;
-					newClient.packageCache.push(p.p);
-					newClient.address = p.d.getAddress();
-					newClient.port = p.d.getPort();
+					newClient.address = p.address;
+					newClient.port = p.port;
 					clients.add(newClient);
-					System.out.println("added client " + clientId + " @ " + p.d.getAddress().toString());
+					System.out.println("added client " + clientId + " @ " + p.address.toString());
 					
 					Package ap = new Package();
 					ap.fillHeader();
 					Packer.packByte(ap, TYPE_ACKNOWLEDGE);
 					Packer.packInt(ap, clientId);
-					nw.send(p.d.getAddress(), p.d.getPort(), ap);
+					ap.address = p.address;
+					ap.port = p.port;
+					nw.send(ap);
 				} else if(type == TYPE_UNREGISTER) {
 					//clients.set(Unpacker.unpackInt(p.p), null);
-					clients.remove(Unpacker.unpackInt(p.p));
+					clients.remove(Unpacker.unpackInt(p));
 				} else {
-					int clientId = Unpacker.unpackInt(p.p);
+					int clientId = Unpacker.unpackInt(p);
 					System.out.println("data with " + clientId);
 					
 					if(type == TYPE_MOVEMENT) {
-						float x = Unpacker.unpackFloat(p.p);
-						float y = Unpacker.unpackFloat(p.p);
-						float z = Unpacker.unpackFloat(p.p);
+						float x = Unpacker.unpackFloat(p);
+						float y = Unpacker.unpackFloat(p);
+						float z = Unpacker.unpackFloat(p);
 						for(int i = 0; i < clients.size(); i++) {
 							Client c = clients.get(i);
 							if(c.id != clientId && c.hasMap) {
@@ -115,7 +116,9 @@ public class ServerMain {
 								Packer.packFloat(np, x);
 								Packer.packFloat(np, y);
 								Packer.packFloat(np, z);
-								nw.send(c.address, c.port, np);
+								np.address = c.address;
+								np.port = c.port;
+								nw.send(np);
 							}
 						}
 					} else if(type == TYPE_CHAT) {
@@ -131,7 +134,9 @@ public class ServerMain {
 						Packer.packInt(dimPackage, mg.bytemap.length);
 						Packer.packInt(dimPackage, packetCount);
 						Packer.packInt(dimPackage, overallSize);
-						nw.send(p.d.getAddress(), p.d.getPort(), dimPackage);
+						dimPackage.address = p.address;
+						dimPackage.port = p.port;
+						nw.send(dimPackage);
 						
 						try {
 							Thread.sleep(100);
@@ -156,7 +161,9 @@ public class ServerMain {
 							Packer.packInt(data, transmissionSize);
 							System.out.println("pl size = " + transmissionSize);
 							Packer.packByteArray(data, Arrays.copyOfRange(mapdata, c*512, c*512 + transmissionSize));
-							nw.send(p.d.getAddress(), p.d.getPort(), data);
+							data.address = p.address;
+							data.port = p.port;
+							nw.send(data);
 							try {
 								Thread.sleep(100);
 							} catch (InterruptedException e) {

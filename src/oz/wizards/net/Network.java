@@ -15,7 +15,7 @@ public class Network {
 			this.p = p;
 		}
 	}
-	public Packet lastReceivedPackage = null;
+	public Package lastReceivedPackage = null;
 	DatagramSocket socket = null;
 	
 	public Network () {
@@ -46,12 +46,15 @@ public class Network {
 			e.printStackTrace();
 		}
 		rp.length = dp.getLength();
-		lastReceivedPackage = new Packet(dp, rp);
+		rp.address = dp.getAddress();
+		rp.port = dp.getPort();
+		
+		lastReceivedPackage = rp;
 	}
 	
-	public void send (InetAddress dest, int port, Package pkg) {
+	public void send (Package pkg) {
 		try {
-			socket.send(new DatagramPacket(pkg.getPacket(), pkg.pointer, dest, port));
+			socket.send(new DatagramPacket(pkg.getPacket(), pkg.pointer, pkg.address, pkg.port));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

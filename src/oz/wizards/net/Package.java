@@ -1,7 +1,11 @@
 package oz.wizards.net;
 
+import java.net.InetAddress;
+
 public class Package {
 	byte [] packet;
+	public InetAddress address;
+	public int port;
 	public int pointer;
 	int length;
 	

@@ -100,7 +100,6 @@ public class ServerMain {
 					clients.remove(Unpacker.unpackInt(p));
 				} else {
 					int clientId = Unpacker.unpackInt(p);
-					System.out.println("data with " + clientId);
 					
 					if(type == TYPE_MOVEMENT) {
 						float x = Unpacker.unpackFloat(p);

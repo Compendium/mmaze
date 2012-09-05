@@ -208,44 +208,6 @@ public class Game implements Runnable {
 
 			translation = nextTranslation;
 		}
-		while(Main.networkManager.receivedPackages.size() != 0) {
-			Package recv = Main.networkManager.receivedPackages.pop();
-			Unpacker.unpackString(recv);
-			Unpacker.unpackLong(recv);
-			byte tag = Unpacker.unpackByte(recv);
-			if(tag == TYPE_MOVEMENT) {
-				int cid = Unpacker.unpackInt(recv);
-				float x = Unpacker.unpackFloat(recv);
-				float y = Unpacker.unpackFloat(recv);
-				float z = Unpacker.unpackFloat(recv);
-				
-				if(players.containsKey(cid)){
-					players.get(cid).position.x = x;
-					players.get(cid).position.y = y;
-					players.get(cid).position.z = z;
-				} else {
-					Player p = new Player();
-					p.orientation = new Vector3f(0,0,0);
-					p.position = new Vector3f(x,y,z);
-					players.put(cid, p);
-				}
-			}
-		}
-		
-		if(timestapmPositionSend < System.nanoTime()) {
-			timestapmPositionSend = System.nanoTime() + 100000000;
-			Package p = new Package();
-			p.fillHeader();
-			Packer.packByte(p, TYPE_MOVEMENT);
-			Packer.packInt(p, clientId);
-			Packer.packFloat(p, translation.x);
-			Packer.packFloat(p, translation.y);
-			Packer.packFloat(p, translation.z);
-			
-			p.address = serverAddr;
-			p.port = serverPort;
-			Main.networkManager.queue(p);
-		}
 	}
 
 	long tPrint = 0;
@@ -324,6 +286,8 @@ public class Game implements Runnable {
 		destruct();
 		isRunning = false;
 	}
+	
+	Thread network;
 
 	public void create() {
 		Package registerPackage = new Package();
@@ -538,9 +502,62 @@ public class Game implements Runnable {
 		
 		System.out.print('\n');
 		mg.bytemap = map;
-		mg.print();
 		
 		System.out.println("ready.");
+
+		network = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				while (Main.game.isCloseRequested == false) {
+					while (Main.networkManager.receivedPackages.size() != 0) {
+						Package recv = Main.networkManager.receivedPackages
+								.pop();
+						Unpacker.unpackString(recv);
+						Unpacker.unpackLong(recv);
+						byte tag = Unpacker.unpackByte(recv);
+						if (tag == TYPE_MOVEMENT) {
+							int cid = Unpacker.unpackInt(recv);
+							float x = Unpacker.unpackFloat(recv);
+							float y = Unpacker.unpackFloat(recv);
+							float z = Unpacker.unpackFloat(recv);
+
+							if (players.containsKey(cid)) {
+								players.get(cid).position.x = x;
+								players.get(cid).position.y = y;
+								players.get(cid).position.z = z;
+							} else {
+								Player p = new Player();
+								p.orientation = new Vector3f(0, 0, 0);
+								p.position = new Vector3f(x, y, z);
+								players.put(cid, p);
+							}
+						}
+					}
+
+					if (timestapmPositionSend < System.nanoTime()) {
+						timestapmPositionSend = System.nanoTime() + 6000000;
+						Package p = new Package();
+						p.fillHeader();
+						Packer.packByte(p, TYPE_MOVEMENT);
+						Packer.packInt(p, clientId);
+						Packer.packFloat(p, translation.x);
+						Packer.packFloat(p, translation.y);
+						Packer.packFloat(p, translation.z);
+
+						p.address = serverAddr;
+						p.port = serverPort;
+						Main.networkManager.queue(p);
+					}
+					try {
+						Thread.sleep(10);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			}
+		});
+		network.start();
 	}
 
 	public void destruct() {

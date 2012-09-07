@@ -97,7 +97,7 @@ public class ServerMain {
 					nw.send(ap);
 				} else if(type == TYPE_UNREGISTER) {
 					//clients.set(Unpacker.unpackInt(p.p), null);
-					clients.remove(Unpacker.unpackInt(p));
+					//clients.remove(Unpacker.unpackInt(p));
 				} else {
 					int clientId = Unpacker.unpackInt(p);
 					
@@ -105,6 +105,9 @@ public class ServerMain {
 						float x = Unpacker.unpackFloat(p);
 						float y = Unpacker.unpackFloat(p);
 						float z = Unpacker.unpackFloat(p);
+						float rx = Unpacker.unpackFloat(p);
+						float ry = Unpacker.unpackFloat(p);
+						float rz = Unpacker.unpackFloat(p);
 						for(int i = 0; i < clients.size(); i++) {
 							Client c = clients.get(i);
 							if(c.id != clientId && c.hasMap) {
@@ -115,6 +118,9 @@ public class ServerMain {
 								Packer.packFloat(np, x);
 								Packer.packFloat(np, y);
 								Packer.packFloat(np, z);
+								Packer.packFloat(np, rx);
+								Packer.packFloat(np, ry);
+								Packer.packFloat(np, rz);
 								np.address = c.address;
 								np.port = c.port;
 								nw.send(np);

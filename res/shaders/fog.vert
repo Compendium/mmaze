@@ -19,6 +19,6 @@ void main()
 	//normal
 	vec4 pos = vec4(position, 1.0f);
 	pos = gl_ModelViewProjectionMatrix * pos;
-	pos.y = pos.y + deltaTime;
+	//pos.y = pos.y + deltaTime;
 	gl_Position = pos;
 }

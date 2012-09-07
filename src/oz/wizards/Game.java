@@ -172,7 +172,6 @@ public class Game implements Runnable {
 			//moved right
 			if (nextTranslation.x > currentTranslation.x) {
 				if (mg.bytemap[indexx][indexy] == 1) {
-					System.out.println("collide right");
 					//nextTranslation.x = currentTranslation.x;
 					//is this working? TODO
 					nextTranslation.x = (float) (Math.ceil(currentTranslation.x / 10.f) * 10 - 2.0); 
@@ -215,8 +214,7 @@ public class Game implements Runnable {
 		drawCalls = 0;
 		long timestamp = System.nanoTime();
 		
-		GL20.glUniform3f(uniformCameraPosition, 0, translation.y, translation.z);
-		GL20.glUniform1f(uniformDelta, translation.x);
+		GL20.glUniform3f(uniformCameraPosition, translation.x, translation.y, translation.z);
 		
 		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER,
 				GL11.GL_NEAREST);
@@ -249,6 +247,12 @@ public class Game implements Runnable {
 			Player val = entry.getValue();
 			glPushMatrix();
 			glTranslatef(val.position.x, 5, val.position.z);
+			
+			//glTranslatef(0,0,0); //normally we'd translate to the center of the object, but the cube is already centereD
+			glRotatef(-val.orientation.y, 0.0f, 1.0f, 0.0f);
+			glRotatef(-val.orientation.x, 1.0f, 0.0f, 0.0f);
+			//glTranslatef(-0,-0,-0);
+			
 			vb.putOBJ(objTex[0], obj[0]);
 			vb.render();
 			glPopMatrix();
@@ -307,14 +311,14 @@ public class Game implements Runnable {
 		Main.networkManager.getNetwork().send(registerPackage);
 		
 		try {
-			Display.setDisplayMode(new DisplayMode(1024, 768));
+			Display.setDisplayMode(new DisplayMode(512, 512));
 			Display.create();
 			Display.setTitle("テスト");
 			Mouse.setGrabbed(false);
 
 			glMatrixMode(GL_PROJECTION);
 			glLoadIdentity();
-			glViewport(0, 0, 1024, 768);
+			glViewport(0, 0, 512, 512);
 			float ratio = (float) (1024.0 / 768.0);
 			//glFrustum(-ratio, +ratio, -1, +1, 1.0, 1000.0);
 			GLU.gluPerspective(45, ratio, 1.f, 10000.f);
@@ -372,11 +376,11 @@ public class Game implements Runnable {
 		objTex = new Texture[3];
 
 		try {
-			objTex[0] = new Texture("res/textures/cubetex.png");
+			objTex[0] = new Texture("res/textures/camera.png");
 			//objTex[1] = new Texture("res/textures/monkey.png");
 			//objTex[2] = new Texture("res/textures/hito.png");
 
-			obj[0] = new OBJFile("res/models/cube.obj");
+			obj[0] = new OBJFile("res/models/camera.obj");
 			//obj[1] = new OBJFile("res/models/monkey.obj");
 			//obj[2] = new OBJFile("res/models/hito.obj");
 			
@@ -520,11 +524,17 @@ public class Game implements Runnable {
 							float x = Unpacker.unpackFloat(recv);
 							float y = Unpacker.unpackFloat(recv);
 							float z = Unpacker.unpackFloat(recv);
+							float rx = Unpacker.unpackFloat(recv);
+							float ry = Unpacker.unpackFloat(recv);
+							float rz = Unpacker.unpackFloat(recv);
 
 							if (players.containsKey(cid)) {
 								players.get(cid).position.x = x;
 								players.get(cid).position.y = y;
 								players.get(cid).position.z = z;
+								players.get(cid).orientation.x = rx;
+								players.get(cid).orientation.y = ry;
+								players.get(cid).orientation.z = rz;
 							} else {
 								Player p = new Player();
 								p.orientation = new Vector3f(0, 0, 0);
@@ -543,6 +553,9 @@ public class Game implements Runnable {
 						Packer.packFloat(p, translation.x);
 						Packer.packFloat(p, translation.y);
 						Packer.packFloat(p, translation.z);
+						Packer.packFloat(p, rotation.x);
+						Packer.packFloat(p, rotation.y);
+						Packer.packFloat(p, rotation.z);
 
 						p.address = serverAddr;
 						p.port = serverPort;

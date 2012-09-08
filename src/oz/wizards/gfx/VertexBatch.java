@@ -58,16 +58,22 @@ public class VertexBatch {
 	 * Adds a quad (2 Triangles / 6 Vertices) to the rendering queue for later
 	 * rendering with end()
 	 * 
+	 *2c-----d3
+	 * |\    |
+	 * |  \  |
+	 * |    \|
+	 *0a-----b1
+	 * 
 	 * @param tex
 	 *            The texture to use for drawing, can be null(TODO)
 	 * @param a
-	 *            Upper Left
-	 * @param b
 	 *            Lower Left
-	 * @param c
-	 *            Upper Right
-	 * @param d
+	 * @param b
 	 *            Lower Right
+	 * @param c
+	 *            Upper Left
+	 * @param d
+	 *            Upper Right
 	 * @param uvmin
 	 *            The upper left texture coordinate in pixels
 	 * @param uvmax
@@ -133,19 +139,13 @@ public class VertexBatch {
 		// addTriangle(mVertexMap.get(texid), c, b, d, rgb);
 		TextureInfo ti = mVertexMap.get(tex.texId);
 
-		addVertex(ti, a, rgb, new Vector2f(realuvmin.x, realuvmax.y)); // lower
-																		// left
-		addVertex(ti, b, rgb, new Vector2f(realuvmin.x, realuvmin.y)); // upper
-																		// left
-		addVertex(ti, c, rgb, new Vector2f(realuvmax.x, realuvmax.y));// lower
-																		// right
+		addVertex(ti, b, rgb, new Vector2f(realuvmax.x, realuvmax.y));
+		addVertex(ti, c, rgb, new Vector2f(realuvmin.x, realuvmin.y));
+		addVertex(ti, a, rgb, new Vector2f(realuvmin.x, realuvmax.y));
 
-		addVertex(ti, c, rgb, new Vector2f(realuvmax.x, realuvmax.y));// lower
-																		// right
-		addVertex(ti, b, rgb, new Vector2f(realuvmin.x, realuvmin.y)); // upper
-																		// left
-		addVertex(ti, d, rgb, new Vector2f(realuvmax.x, realuvmin.y));// upper
-																		// right
+		addVertex(ti, d, rgb, new Vector2f(realuvmax.x, realuvmin.y));
+		addVertex(ti, c, rgb, new Vector2f(realuvmin.x, realuvmin.y));
+		addVertex(ti, b, rgb, new Vector2f(realuvmax.x, realuvmax.y));
 	}
 
 	public void render() {

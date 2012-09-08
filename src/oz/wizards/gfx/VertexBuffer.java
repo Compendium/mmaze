@@ -10,6 +10,9 @@ import static org.lwjgl.opengl.GL20.*;
 import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
 
+import oz.wizards.Game;
+import oz.wizards.Main;
+
 public class VertexBuffer {
 	private int mVboid = -1;
 	private int mCamUniform = 0;
@@ -30,7 +33,6 @@ public class VertexBuffer {
 		buffer = ByteBuffer.allocateDirect(mMaxVertexCount * ((3*4)+(2*4)+4)).order(ByteOrder.nativeOrder());
 		mPositionAttrib = s.getAttributeLocation("position");
 		mTexcoordAttrib = s.getAttributeLocation("texcoord");
-		mIdAttrib = s.getAttributeLocation("id");
 		mTexUniform = s.getUniformLocation("texture");
 		mCamUniform = s.getUniformLocation("cam");
 		glUniform1i(mTexUniform, 0);
@@ -49,7 +51,7 @@ public class VertexBuffer {
 	 *
 	 * @param v The current vertex
 	 */
-	public void add(Vector3f v, Vector2f texc, float id) {
+	public void add(Vector3f v, Vector2f texc) {
 		if(mVertexCount == mMaxVertexCount) {
 			mMaxVertexCount *= 2;
 			//FloatBuffer newbb = ByteBuffer.allocateDirect((mMaxVertexCount * (3*4))).order(ByteOrder.nativeOrder()).asFloatBuffer();
@@ -67,9 +69,27 @@ public class VertexBuffer {
 		buffer.putFloat(v.x);
 		buffer.putFloat(v.y);
 		buffer.putFloat(v.z);
-		buffer.putFloat((1.f / (float)texture.width) * texc.x);
-		buffer.putFloat((1.f / (float)texture.height) * texc.y);
-		buffer.putFloat(id);
+		buffer.putFloat(texc.x);
+		buffer.putFloat(texc.y);
+	}
+	
+	public void putQuad (Vector3f a, Vector3f b, Vector3f c, Vector3f d, Vector2f uvmin, Vector2f uvmax, Vector3f rgb) {
+		Vector2f realuvmin = new Vector2f((float) (1. / texture.width * uvmin.x)
+				+ (float) (0.1 / texture.width),
+				(float) (1. / texture.height * uvmin.y)
+						+ (float) (0.1 / texture.height));
+		Vector2f realuvmax = new Vector2f((float) (1. / texture.width * uvmax.x)
+				- (float) (0.1 / texture.width),
+				(float) (1. / texture.height * uvmax.y)
+						- (float) (0.1 / texture.height));
+		
+		add(b, new Vector2f(realuvmax.x, realuvmax.y));
+		add(c, new Vector2f(realuvmin.x, realuvmin.y));
+		add(a, new Vector2f(realuvmin.x, realuvmax.y));
+
+		add(d, new Vector2f(realuvmax.x, realuvmin.y));
+		add(c, new Vector2f(realuvmin.x, realuvmin.y));
+		add(b, new Vector2f(realuvmax.x, realuvmax.y));
 	}
 
 	public void upload() throws IOException{
@@ -95,24 +115,18 @@ public class VertexBuffer {
 		System.out.println("Uploaded buffer " + mVboid + " with " + this.buffer.limit() / 1000.0 + "k bytes");
 }
 
-	public void render(int dataType, Vector3f camPos){
-		if (dataType == GL_POINTS) {
-			glEnable(GL_POINT_SPRITE);
-			glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
-		}
+	public void render(){
 		glUniform1i(mTexUniform, 0);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture.texId);
 
-		//System.out.println(mVertexCount + "");
-		glUniform3f(mCamUniform, -camPos.x, -camPos.y, -camPos.z);
 		glEnableVertexAttribArray(mPositionAttrib);
 		glEnableVertexAttribArray(mTexcoordAttrib);
 		glBindBuffer(GL_ARRAY_BUFFER, mVboid);
-		glVertexAttribPointer(mPositionAttrib, 3, GL_FLOAT, false, (3*4)+(2*4)+4, 0);
-		glVertexAttribPointer(mTexcoordAttrib, 2, GL_FLOAT, false, (3*4)+(2*4)+4, (3*4));
-		glVertexAttribPointer(mIdAttrib, 1, GL_FLOAT, false, (3*4)+(2*4)+4, (3*4)+(2*4));
-		glDrawArrays(dataType, 0, mMaxVertexCount);
+		glVertexAttribPointer(mPositionAttrib, 3, GL_FLOAT, false, (3*4)+(2*4), 0);
+		glVertexAttribPointer(mTexcoordAttrib, 2, GL_FLOAT, false, (3*4)+(2*4), (3*4));
+		glDrawArrays(GL_TRIANGLES, 0, mMaxVertexCount);
+		Game.drawCalls++;
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 }

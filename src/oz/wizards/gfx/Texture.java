@@ -6,6 +6,11 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL12;
+import org.lwjgl.opengl.GL14;
+import org.lwjgl.opengl.GL15;
+import org.lwjgl.opengl.GL30;
+import org.lwjgl.util.glu.GLU;
 
 import de.matthiasmann.twl.utils.PNGDecoder;
 import de.matthiasmann.twl.utils.PNGDecoder.Format;
@@ -40,13 +45,19 @@ public class Texture {
 		} finally {
 		}
 		
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER,
-				GL11.GL_LINEAR);
-		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER,
-				GL11.GL_LINEAR);
-
 		texId = GL11.glGenTextures();
 		GL11.glBindTexture(GL11.GL_TEXTURE_2D, texId);
+		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL14.GL_GENERATE_MIPMAP, GL11.GL_TRUE);
+		
+		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER,
+				GL11.GL_LINEAR_MIPMAP_LINEAR);
+		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER,
+				GL11.GL_LINEAR);
+		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S,
+				GL11.GL_REPEAT);
+		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T,
+				GL11.GL_REPEAT);
+		
 		GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, (hasAlpha ? GL11.GL_RGBA
 				: GL11.GL_RGB), width, height, 0, (hasAlpha ? GL11.GL_RGBA
 				: GL11.GL_RGB), GL11.GL_UNSIGNED_BYTE, buf);

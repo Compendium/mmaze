@@ -8,6 +8,7 @@ import org.lwjgl.util.vector.Vector3f;
 
 import oz.wizards.gfx.Texture;
 import oz.wizards.gfx.VertexBatch;
+import oz.wizards.gfx.VertexBuffer;
 
 /*
  * recursive backtracking algorithm
@@ -86,7 +87,7 @@ public class MazeGenerator {
 	 * Puts a mesh of the maze into the specified {@link VertexBatch}.
 	 * @param v
 	 */
-	public void meshify (VertexBatch v, Texture t) {
+	public void meshifyDynamic (VertexBatch v, Texture t) {
 		float f = scale;
 		for(int y = 0; y < bytemap[0].length; y++){
 			for(int x = 0; x < bytemap.length; x++) {
@@ -96,17 +97,17 @@ public class MazeGenerator {
 				//floor+ceiling
 				if(bytemap[x][y] == 0) {
 					v.putQuad(t,
-							new Vector3f(x*f+0,0,y*f+0),	//0
+							new Vector3f(x*f+0	,0	,y*f+0),	//0
 							new Vector3f(x*f+1*f,0,y*f+0),	//1
 							new Vector3f(x*f+0,0,y*f+-1*f),	//2
 							new Vector3f(x*f+1*f,0,y*f+-1*f),	//3
-							new Vector2f(0,0), new Vector2f(128, 128), new Vector3f(1,1,1));
+							new Vector2f(0,0), new Vector2f(256, 256), new Vector3f(1,1,1));
 					v.putQuad(t,
 							new Vector3f(x*f+0, 1*f, y*f+-1*f),	//0
 							new Vector3f(x*f+1*f, 1*f, y*f+-1*f),	//1
 							new Vector3f(x*f, 1*f, y*f),	//2
 							new Vector3f(x*f+1*f, 1*f, y*f),	//3
-							new Vector2f(0,0), new Vector2f(128, 128), new Vector3f(1,1,1));
+							new Vector2f(256,0), new Vector2f(512, 256), new Vector3f(1,1,1));
 				}
 				
 				//left wall
@@ -116,7 +117,7 @@ public class MazeGenerator {
 							new Vector3f(x*f+0,0,y*f+-1*f),	//1
 							new Vector3f(x*f+0,1*f,y*f+0),	//2
 							new Vector3f(x*f+0,1*f,y*f+-1*f),	//3
-							new Vector2f(0,0), new Vector2f(128, 128), new Vector3f(1,1,1));
+							new Vector2f(0,256), new Vector2f(256, 512), new Vector3f(1,1,1));
 				}
 				//right wall
 				if(bytemap[x+1][y] == 1) {
@@ -125,7 +126,7 @@ public class MazeGenerator {
 							new Vector3f(x*f+1*f,0,y*f+0),	//1
 							new Vector3f(x*f+1*f,1*f,y*f+-1*f),	//2
 							new Vector3f(x*f+1*f,1*f,y*f+0),	//3
-							new Vector2f(0,0), new Vector2f(128, 128), new Vector3f(1,1,1));
+							new Vector2f(256,256), new Vector2f(512, 512), new Vector3f(1,1,1));
 				}
 				//front wall
 				if(bytemap[x][y+1] == 1) {
@@ -134,7 +135,7 @@ public class MazeGenerator {
 							new Vector3f(x*f+0,0,y*f),	//1
 							new Vector3f(x*f+1*f,1*f,y*f),	//2
 							new Vector3f(x*f+0,1*f,y*f),	//3
-							new Vector2f(0,0), new Vector2f(128, 128), new Vector3f(1,1,1));
+							new Vector2f(512,0), new Vector2f(768, 256), new Vector3f(1,1,1));
 				}
 				//back wall
 				if(bytemap[x][y-1] == 1) {
@@ -143,9 +144,81 @@ public class MazeGenerator {
 							new Vector3f(x*f+1*f,0,y*f+-1*f),	//1
 							new Vector3f(x*f+0,1*f,y*f+-1*f),	//2
 							new Vector3f(x*f+1*f,1*f,y*f+-1*f),	//3
-							new Vector2f(0,0), new Vector2f(128, 128), new Vector3f(1,1,1));
+							new Vector2f(768,0), new Vector2f(1024, 256), new Vector3f(1,1,1));
 				}
 			}
+		}
+	}
+	
+	/**
+	 * Puts a mesh of the maze into the specified {@link VertexBuffer}.
+	 * @param v
+	 */
+	public void meshifyStatic (VertexBuffer v, Texture t) {
+		float f = scale;
+		for(int y = 0; y < bytemap[0].length; y++){
+			for(int x = 0; x < bytemap.length; x++) {
+				if(x == 0 || y == 0 || x == bytemap[0].length-1 || y == bytemap.length-1) continue;
+				if(bytemap[x][y] == 1) continue;
+				
+				//floor+ceiling
+				if(bytemap[x][y] == 0) {
+					v.putQuad(//t,
+							new Vector3f(x*f+0	,0	,y*f+0),	//0
+							new Vector3f(x*f+1*f,0,y*f+0),	//1
+							new Vector3f(x*f+0,0,y*f+-1*f),	//2
+							new Vector3f(x*f+1*f,0,y*f+-1*f),	//3
+							new Vector2f(0,0), new Vector2f(256, 256), new Vector3f(1,1,1));
+					v.putQuad(//t,
+							new Vector3f(x*f+0, 1*f, y*f+-1*f),	//0
+							new Vector3f(x*f+1*f, 1*f, y*f+-1*f),	//1
+							new Vector3f(x*f, 1*f, y*f),	//2
+							new Vector3f(x*f+1*f, 1*f, y*f),	//3
+							new Vector2f(256,0), new Vector2f(512, 256), new Vector3f(1,1,1));
+				}
+				
+				//left wall
+				if(bytemap[x-1][y] == 1) {
+					v.putQuad(//t,
+							new Vector3f(x*f+0,0,y*f+0),	//0
+							new Vector3f(x*f+0,0,y*f+-1*f),	//1
+							new Vector3f(x*f+0,1*f,y*f+0),	//2
+							new Vector3f(x*f+0,1*f,y*f+-1*f),	//3
+							new Vector2f(0,256), new Vector2f(256, 512), new Vector3f(1,1,1));
+				}
+				//right wall
+				if(bytemap[x+1][y] == 1) {
+					v.putQuad(//t,
+							new Vector3f(x*f+1*f,0,y*f+-1*f),	//0
+							new Vector3f(x*f+1*f,0,y*f+0),	//1
+							new Vector3f(x*f+1*f,1*f,y*f+-1*f),	//2
+							new Vector3f(x*f+1*f,1*f,y*f+0),	//3
+							new Vector2f(256,256), new Vector2f(512, 512), new Vector3f(1,1,1));
+				}
+				//front wall
+				if(bytemap[x][y+1] == 1) {
+					v.putQuad(//t,
+							new Vector3f(x*f+1*f,0,y*f),	//0
+							new Vector3f(x*f+0,0,y*f),	//1
+							new Vector3f(x*f+1*f,1*f,y*f),	//2
+							new Vector3f(x*f+0,1*f,y*f),	//3
+							new Vector2f(512,0), new Vector2f(768, 256), new Vector3f(1,1,1));
+				}
+				//back wall
+				if(bytemap[x][y-1] == 1) {
+					v.putQuad(//t,
+							new Vector3f(x*f+0,0,y*f+-1*f),	//0
+							new Vector3f(x*f+1*f,0,y*f+-1*f),	//1
+							new Vector3f(x*f+0,1*f,y*f+-1*f),	//2
+							new Vector3f(x*f+1*f,1*f,y*f+-1*f),	//3
+							new Vector2f(768,0), new Vector2f(1024, 256), new Vector3f(1,1,1));
+				}
+			}
+		}
+		try {
+			v.upload();
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 

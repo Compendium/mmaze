@@ -1,4 +1,4 @@
-package oz.wizards;
+package oz.wizards.screen;
 
 import java.io.IOException;
 import java.lang.reflect.Array;
@@ -22,6 +22,9 @@ import org.lwjgl.util.glu.GLU;
 import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
 
+import oz.wizards.Main;
+import oz.wizards.MazeGenerator;
+import oz.wizards.gfx.Font;
 import oz.wizards.gfx.OBJFile;
 import oz.wizards.gfx.Shader;
 import oz.wizards.gfx.Texture;
@@ -49,7 +52,7 @@ public class Game implements Runnable {
 	public boolean isRunning = false;
 	public boolean isCloseRequested = false;
 
-	private Shader shader1;
+	private Shader shaderBase;
 	Shader shaderFog;
 	int uniformCameraPosition = -1;
 	int uniformDelta = -1;
@@ -60,6 +63,9 @@ public class Game implements Runnable {
 	
 	OBJFile camera;
 	Texture tileset;
+	
+	VertexBatch vbFont;
+	Font font;
 
 	Vector3f rotation;
 	Vector3f translation;
@@ -87,6 +93,7 @@ public class Game implements Runnable {
 	long frametime = 0;
 	long frametimeTimestamp = 0;
 	double ft = 0;
+	float lastft = 0;
 
 	public void update() {
 		while(Mouse.next()) {
@@ -211,6 +218,14 @@ public class Game implements Runnable {
 		
 		shaderFog.enable();
 		
+		if (useVertexBuffer) {
+			vbuffer.render();
+		} else {
+			mg.meshifyDynamic(vb, tileset);
+			vb.render();
+		}
+		
+		
 		for(Map.Entry<Integer, Player> entry : players.entrySet()) {
 			Integer key = entry.getKey();
 			Player val = entry.getValue();
@@ -226,22 +241,37 @@ public class Game implements Runnable {
 			vb.render();
 			glPopMatrix();
 		}
-		if(!useVertexBuffer)
-			mg.meshifyDynamic(vb, tileset);
-		vb.render();
-		
-		if(useVertexBuffer)
-			vbuffer.render();
-		
 		shaderFog.disable();
+		
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+		glMatrixMode(GL_PROJECTION);
+		glPushMatrix();
+		glLoadIdentity();
+		//glOrtho(0, Display.getWidth(), 0, Display.getHeight(), -10, 10);
+		float ratio = (float) (1024.0 / 768.0);
+		//glFrustum(-ratio, +ratio, -1, +1, 1.0, 1000.0);
+		//GLU.gluPerspective(45, ratio, 1.f, 10000.f);
+		GLU.gluOrtho2D(-ratio, +ratio, -1, +1);
+		
+		shaderBase.enable();
+		font.draw(new Vector2f(-ratio,1-0.05f), 0.005f, "mmaze");
+		font.draw(new Vector2f(-ratio,1-0.05f*2), 0.005f, "FPS: " + 1000.0/lastft);
+		font.draw(new Vector2f(-ratio, 1-0.05f*3), 0.005f, "ft: " + lastft);
+		vbFont.render();
+		shaderBase.disable();
+		glPopMatrix();
+		
+		
 		Display.update();
 		
 		long frametime = System.nanoTime() - timestamp;
 		if(tPrint < System.nanoTime()) {
-			tPrint = System.nanoTime() + 1000000000;
+			tPrint = System.nanoTime() + 160000000;
 			System.out.println("draw calls = " + drawCalls);
 			System.out.println("frame-time = " + ft);
 			System.out.println("~");
+			lastft = (float)ft;
 		}
 	}
 
@@ -282,7 +312,7 @@ public class Game implements Runnable {
 		registerPackage.port = serverPort;
 		Main.networkManager.getNetwork().send(registerPackage);
 		
-		try {
+		/*try {
 			Display.setDisplayMode(new DisplayMode(1024, 1024));
 			Display.create();
 			Display.setTitle("テスト");
@@ -300,8 +330,8 @@ public class Game implements Runnable {
 
 			glEnable(GL_TEXTURE_2D);
 			glDisable(GL_SMOOTH);
-			//glDisable(GL_CULL_FACE);
-			glEnable(GL_CULL_FACE);
+			glDisable(GL_CULL_FACE);
+			//glEnable(GL_CULL_FACE);
 			glFrontFace(GL_CCW);
 			glEnable(GL_DEPTH_TEST);
 			
@@ -317,9 +347,28 @@ public class Game implements Runnable {
 		} catch (LWJGLException e) {
 			e.printStackTrace();
 			eject(-1);
+		}*/
+		try {
+			Display.makeCurrent();
+			
+			Display.setTitle("テスト");
+			Mouse.setGrabbed(false);
+
+			glMatrixMode(GL_PROJECTION);
+			glLoadIdentity();
+			glViewport(0, 0, Display.getWidth(), Display.getHeight());
+			float ratio = (float)Display.getWidth() / (float)Display.getHeight();
+			//glFrustum(-ratio, +ratio, -1, +1, 1.0, 1000.0);
+			GLU.gluPerspective(45, ratio, 1.f, 10000.f);
+
+			glMatrixMode(GL_MODELVIEW);
+			glLoadIdentity();
+		} catch (LWJGLException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
 		}
 
-		shader1 = new Shader("res/shaders/shader");
+		shaderBase = new Shader("res/shaders/shader");
 		shaderFog = new Shader("res/shaders/fog");
 		
 		uniformDelta = shaderFog.getUniformLocation("deltaTime");
@@ -327,7 +376,7 @@ public class Game implements Runnable {
 		System.out.println(uniformCameraPosition + ", campos");
 		System.out.println(uniformDelta + ", delta");
 		
-		vb = new VertexBatch(shader1);
+		vb = new VertexBatch(shaderFog);
 
 		mg = new MazeGenerator(16, 16);
 		rotation = new Vector3f(0, 0, 0);
@@ -347,6 +396,10 @@ public class Game implements Runnable {
 		try {
 			camera = new OBJFile("res/models/camera.obj");
 			tileset = new Texture("res/textures/tileset.png");
+			
+			vbFont = new VertexBatch(shaderBase);
+			font = new Font(new Texture("res/textures/font.png"), vbFont);
+			font.init();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

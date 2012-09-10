@@ -65,7 +65,7 @@ public class ServerMain {
 		Network nw = new Network();
 		nw.create(4182);
 		
-		MazeGenerator mg = new MazeGenerator(16, 16);
+		MazeGenerator mg = new MazeGenerator(64, 64);
 		mg.print();
 		
 		while(true) {

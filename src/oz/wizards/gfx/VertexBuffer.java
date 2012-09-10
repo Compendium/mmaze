@@ -10,8 +10,8 @@ import static org.lwjgl.opengl.GL20.*;
 import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
 
-import oz.wizards.Game;
 import oz.wizards.Main;
+import oz.wizards.screen.Game;
 
 public class VertexBuffer {
 	private int mVboid = -1;

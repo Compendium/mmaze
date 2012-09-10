@@ -1,5 +1,6 @@
 package oz.wizards.gfx;
 
+import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
 
@@ -8,13 +9,6 @@ public class Font {
 	private VertexBatch vertexBatch;
 	private short [] kerningRight;
 	private short [] kerningLeft;
-	
-	public Font (Texture fontImage, Shader shader) {
-		this.tex = fontImage;
-		this.vertexBatch = new VertexBatch(shader);
-		kerningRight = new short [256];
-		kerningLeft = new short [256];
-	}
 	
 	public Font (Texture fontImage, VertexBatch vertexBatch) {
 		this.tex = fontImage;
@@ -29,6 +23,10 @@ public class Font {
 	}
 	
 	public void draw (Vector2f position, float scale, String str) {
+		draw(position, scale, new Vector3f(1,1,1), str);
+	}
+	
+	public void draw (Vector2f position, float scale, Vector3f rgb, String str) {
 		Vector2f currentPosition = new Vector2f(position);
 		for(int i = 0; i < str.length(); i++) {
 			char c = str.charAt(i);
@@ -38,13 +36,13 @@ public class Font {
 			//float charWidth = 1.f/(ratio*2) * (float)charPixelWidth; //'real' width, for the vertexbatch coordinates
 			float charWidth = charPixelWidth;
 			vertexBatch.putQuad(tex,
-					new Vector3f(currentPosition.x, position.y, 0),
-					new Vector3f(currentPosition.x, position.y + 8*scale, 0),
-					new Vector3f(currentPosition.x + charWidth*scale, position.y, 0),
-					new Vector3f(currentPosition.x + charWidth*scale, position.y + 8*scale, 0),
+					new Vector3f(currentPosition.x, position.y, 0), //1
+					new Vector3f(currentPosition.x + charWidth*scale, position.y, 0), //0
+					new Vector3f(currentPosition.x, position.y + 8*scale, 0), //3
+					new Vector3f(currentPosition.x + charWidth*scale, position.y + 8*scale, 0), //2
 					new Vector2f(cx * 8 + kerningLeft[c], cy * 8),
 					new Vector2f(cx * 8 + 8 - kerningRight[c], cy * 8 + 8),
-					new Vector3f(1,1,1));
+					rgb);
 			currentPosition.x = currentPosition.x + charWidth*scale + 1.f * scale;
 		}
 	}

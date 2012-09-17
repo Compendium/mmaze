@@ -16,22 +16,18 @@ import oz.wizards.gfx.Shader;
 import oz.wizards.gfx.Texture;
 import oz.wizards.gfx.VertexBatch;
 
-public class Title implements Screen, Runnable {
-	boolean isCloseRequested = false;
-	
+public class TitleScreen extends Screen {
 	Shader shaderBase;
 	VertexBatch vb;
 	Texture texture;
 	
 	float fact = 0.f;
 	boolean forward = true;
-	long frametime = 0;
-	long frametimeTimestamp = 0;
 	
 	@Override
 	public void create() {
 		try{
-			Display.setDisplayMode(new DisplayMode(1024, 768));
+			Display.setDisplayMode(new DisplayMode(1920, 1080));
 			Display.create();
 			Display.setTitle("テスト");
 			
@@ -70,7 +66,7 @@ public class Title implements Screen, Runnable {
 
 	@Override
 	public void update() {
-		if(Keyboard.isKeyDown(Keyboard.KEY_ESCAPE)) isCloseRequested = true;
+		if(Keyboard.isKeyDown(Keyboard.KEY_ESCAPE)) active = false;
 	}
 
 	@Override
@@ -88,29 +84,29 @@ public class Title implements Screen, Runnable {
 		//float m = (float) (Math.tan(Math.toRadians(45.f / 2)) * z);
 		float z = -10.0f;
 		float x = (float)Display.getWidth()/2 - 449.f/2;
-		float y = (float)Display.getHeight()/2 - 422.f/2;
+		float y = (float)Display.getHeight()/2 - 480.f/2;
 		
 		vb.putQuad(texture,
-				new Vector3f(x + 0, y + 422, z),//3
-				new Vector3f(x + 449, y + 422, z),//2
+				new Vector3f(x + 0, y + 480, z),//3
+				new Vector3f(x + 449, y + 480, z),//2
 				new Vector3f(x + 0, y + 0, z),//1
 				new Vector3f(x + 449, y + 0, z),//0
-				new Vector2f(45,150), new Vector2f(492, 571), new Vector3f(fact,fact,fact));
+				new Vector2f(45,150), new Vector2f(492, 630), new Vector3f(fact,fact,fact));
 		
 		vb.render();		
 		shaderBase.disable();
 		if (forward) {
-			fact += 0.01f * ((double) frametime / 10000000.0) * 0.8f;
+			fact += 0.01f * ((double) Main.sm.getFrametime()  / 10000000.0) * 0.9f;
 			if (fact >= 1.f) {
 				forward = false;
 				fact = 1.f;
 			}
 		} else {
-			fact -= 0.01f * ((double) frametime / 10000000.0) * 0.8f;
+			fact -= 0.01f * ((double) Main.sm.getFrametime()  / 10000000.0) * 0.9f;
 			if (fact <= 0.f) {
 				forward = true;
 				fact = 0.f;
-				isCloseRequested = true;
+				this.active = false;
 			}
 		}
 
@@ -119,34 +115,12 @@ public class Title implements Screen, Runnable {
 
 	@Override
 	public void destruct() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void run() {
-		create();
-		while(isCloseRequested == false) {
-			if(Display.isCloseRequested()) {
-				isCloseRequested = true;
-				System.out.println("closing");
-			}
-			
-			frametimeTimestamp = System.nanoTime();
-			update();
-			draw();
-			frametime = System.nanoTime() - frametimeTimestamp;
-		}
-		destruct();
 		try {
 			Display.releaseContext();
 		} catch (LWJGLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		Main.gameThread = new Thread(new Menu());
-		Main.gameThread.start();
+		Main.sm.setNextScreen(new MenuScreen());
 	}
-
 }

@@ -1,11 +1,17 @@
 package oz.wizards.screen;
 
-public interface Screen {
-	public void create();
+public abstract class Screen {
+	protected boolean active = true;
+	
+	public abstract void create();
 
-	public void update();
+	public abstract void update();
 
-	public void draw();
+	public abstract void draw();
 
-	public void destruct();
+	public abstract void destruct();
+	
+	public boolean isActive() {
+		return active;
+	}
 }

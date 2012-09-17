@@ -11,7 +11,7 @@ import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
 
 import oz.wizards.Main;
-import oz.wizards.screen.Game;
+import oz.wizards.screen.GameScreen;
 
 public class VertexBuffer {
 	private int mVboid = -1;
@@ -126,7 +126,7 @@ public class VertexBuffer {
 		glVertexAttribPointer(mPositionAttrib, 3, GL_FLOAT, false, (3*4)+(2*4), 0);
 		glVertexAttribPointer(mTexcoordAttrib, 2, GL_FLOAT, false, (3*4)+(2*4), (3*4));
 		glDrawArrays(GL_TRIANGLES, 0, mMaxVertexCount);
-		Game.drawCalls++;
+		GameScreen.drawCalls++;
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 }

@@ -20,6 +20,10 @@ public class Package {
 		Packer.packLong(this, System.currentTimeMillis());
 	}
 	
+	public void rewind () {
+		pointer = 0;
+	}
+	
 	public byte[] getPacket () {
 		return packet;
 	}

@@ -11,7 +11,7 @@ import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
 import org.lwjgl.util.vector.Vector4f;
 
-import oz.wizards.screen.Game;
+import oz.wizards.screen.GameScreen;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.*;
@@ -193,7 +193,7 @@ public class VertexBatch {
 				glVertexAttribPointer(mTexcoordAttrib, 2, false, (3 * 4)
 						+ (3 * 4) + (2 * 4), cursor.getValue().vertices);
 
-			Game.drawCalls++;
+			GameScreen.drawCalls++;
 			glDrawArrays(GL_TRIANGLES, 0, cursor.getValue().vertexCount + 1);
 			cursor.getValue().vertexCount = 0;
 			cursor.getValue().vertices.clear();

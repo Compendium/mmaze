@@ -37,7 +37,7 @@ import oz.wizards.net.Packer;
 import oz.wizards.net.Unpacker;
 import static org.lwjgl.opengl.GL11.*;
 
-public class Game implements Runnable {
+public class GameScreen extends Screen {
 	final static byte TYPE_REGISTER = 8; //new client wants to register itself
 	final static byte TYPE_UNREGISTER = 9; //clients wants to unregister itself/close connection
 	final static byte TYPE_ACKNOWLEDGE = 10; //ack the client that just connected
@@ -88,10 +88,8 @@ public class Game implements Runnable {
 		Vector3f orientation;
 	}
 	
-	HashMap<Integer, Player> players = new HashMap<Integer, Game.Player>();
+	HashMap<Integer, Player> players = new HashMap<Integer, GameScreen.Player>();
 	long timestapmPositionSend = 0;
-	long frametime = 0;
-	long frametimeTimestamp = 0;
 	double ft = 0;
 	float lastft = 0;
 
@@ -121,6 +119,8 @@ public class Game implements Runnable {
 				}
 				if(Keyboard.getEventKey() == Keyboard.KEY_ESCAPE) {
 					this.isCloseRequested = true;
+					this.active = false;
+					Main.sm.setNextScreen(null);
 				}
 			}
 		}
@@ -128,7 +128,7 @@ public class Game implements Runnable {
 		Vector3f currentTranslation = new Vector3f(translation);
 		Vector3f nextTranslation = new Vector3f(translation);
 		
-		float t = (float) (ft/18.f);
+		float t = (float) (((double)Main.sm.getFrametime() / 1000000.0)/18.f);
 		//forward
 		if (Keyboard.isKeyDown(Keyboard.KEY_COMMA)) {
 			float xrad = (float) (rotation.x / 180.0 * Math.PI);
@@ -207,7 +207,6 @@ public class Game implements Runnable {
 		drawCalls = 0;
 		long timestamp = System.nanoTime();
 		
-		GL20.glUniform3f(uniformCameraPosition, translation.x, translation.y, translation.z);
 		
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glMatrixMode(GL_MODELVIEW);
@@ -217,6 +216,7 @@ public class Game implements Runnable {
 		glTranslatef(-translation.x, -translation.y, -translation.z);
 		
 		shaderFog.enable();
+		GL20.glUniform3f(uniformCameraPosition, translation.x, translation.y, translation.z);
 		
 		if (useVertexBuffer) {
 			vbuffer.render();
@@ -271,28 +271,10 @@ public class Game implements Runnable {
 			System.out.println("draw calls = " + drawCalls);
 			System.out.println("frame-time = " + ft);
 			System.out.println("~");
-			lastft = (float)ft;
+			lastft = (float) ((float)Main.sm.getFrametime() / 1000000.0);
 		}
 	}
 
-	@Override
-	public void run() {
-		isRunning = true;
-		create();
-		while (isCloseRequested == false) {
-			if(Display.isCloseRequested())
-				isCloseRequested = true;
-			
-			frametimeTimestamp = System.nanoTime();
-			update();
-			draw();
-			frametime = System.nanoTime() - frametimeTimestamp;
-			ft = (double)frametime / 1000000.0;
-		}
-		destruct();
-		isRunning = false;
-	}
-	
 	Thread network;
 
 	public void create() {

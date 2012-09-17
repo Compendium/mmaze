@@ -1,0 +1,30 @@
+package oz.wizards.screen;
+
+public class ScreenManager implements Runnable {
+	boolean keepRunning = true;
+	
+	Screen currentScreen;
+	Screen nextScreen;
+	
+	public ScreenManager (Screen startingScreen) {
+		currentScreen = startingScreen;
+	}
+
+	@Override
+	public void run() {
+		while(keepRunning) {
+			currentScreen.create();
+			while(currentScreen.isActive()) {
+				currentScreen.update();
+				currentScreen.draw();
+			}
+			currentScreen.destruct();
+			
+			currentScreen = nextScreen;
+		}
+	}
+
+	public void setNextScreen(Screen screen) {
+		nextScreen = screen;
+	}
+}

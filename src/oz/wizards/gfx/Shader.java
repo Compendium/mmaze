@@ -32,7 +32,7 @@ public class Shader {
 			//printLogInfo(shader);
 		//}
 		//enable();
-		System.out.println("Created shader " + shader + ", with frag:" + fragShader + " and vert:" + vertShader);
+		System.out.println("Created " + path + " shader " + shader + ", with frag:" + fragShader + " and vert:" + vertShader);
 	}
 
 	public void enable() {

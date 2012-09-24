@@ -22,7 +22,6 @@ public class ScreenManager implements Runnable {
 				currentScreen.draw();
 				frametime = System.nanoTime() - frametimeTimestamp;
 			}
-			System.out.println("destructing");
 			currentScreen.destruct();
 			
 			currentScreen = nextScreen;

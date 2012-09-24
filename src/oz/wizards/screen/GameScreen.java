@@ -216,7 +216,7 @@ public class GameScreen extends Screen {
 		glTranslatef(-translation.x, -translation.y, -translation.z);
 		
 		shaderFog.enable();
-		GL20.glUniform3f(uniformCameraPosition, translation.x, translation.y, translation.z);
+		//GL20.glUniform3f(uniformCameraPosition, translation.x, translation.y, translation.z);
 		
 		if (useVertexBuffer) {
 			vbuffer.render();
@@ -268,20 +268,13 @@ public class GameScreen extends Screen {
 		long frametime = System.nanoTime() - timestamp;
 		if(tPrint < System.nanoTime()) {
 			tPrint = System.nanoTime() + 160000000;
-			System.out.println("draw calls = " + drawCalls);
-			System.out.println("frame-time = " + ft);
-			System.out.println("~");
 			lastft = (float) ((float)Main.sm.getFrametime() / 1000000.0);
 		}
 	}
 
 	Thread network;
 
-	public void create() {
-		Package registerPackage = new Package();
-		registerPackage.fillHeader();
-		Packer.packByte(registerPackage, TYPE_REGISTER);
-		
+	public void create() {		
 		try {
 			serverAddr = InetAddress.getByName("127.0.0.1");
 		} catch (UnknownHostException e2) {
@@ -289,10 +282,6 @@ public class GameScreen extends Screen {
 			e2.printStackTrace();
 		}
 		serverPort = 4182;
-		
-		registerPackage.address = serverAddr;
-		registerPackage.port = serverPort;
-		Main.networkManager.getNetwork().send(registerPackage);
 		
 		/*try {
 			Display.setDisplayMode(new DisplayMode(1024, 1024));
@@ -360,7 +349,7 @@ public class GameScreen extends Screen {
 		
 		vb = new VertexBatch(shaderFog);
 
-		mg = new MazeGenerator(16, 16);
+		//mg = new MazeGenerator(16, 16);
 		rotation = new Vector3f(0, 0, 0);
 		translation = new Vector3f(0, 5, 0);
 		boolean startFound = false;
@@ -386,119 +375,7 @@ public class GameScreen extends Screen {
 			e.printStackTrace();
 		}
 		
-		System.out.println("waiting for ack-packet");
-		
-		NetworkManager nm = Main.networkManager;
-		while(nm.receivedPackages.size() == 0) {
-			try {
-				Thread.sleep(10);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		
-		Package rp = nm.receivedPackages.pop();
-		Unpacker.unpackString(rp);
-		Unpacker.unpackLong(rp);
-		System.out.println("recvd: " + Unpacker.unpackByte(rp));
-		clientId = Unpacker.unpackInt(rp);
-		System.out.println("my id is " + clientId);
-		
-		System.out.println("requesting map...");
-		Package req = new Package();
-		req.fillHeader();
-		Packer.packByte(req, TYPE_MAPREQUEST);
-		Packer.packInt(req, clientId);
-		
-		req.address = serverAddr;
-		req.port = serverPort;
-		nm.getNetwork().send(req);
-		
-		while(nm.receivedPackages.size() == 0) {
-			try {
-				Thread.sleep(10);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		
-		Package nn = nm.receivedPackages.pop();
-		Unpacker.unpackString(nn);
-		Unpacker.unpackLong(nn);
-		byte t = Unpacker.unpackByte(nn);
-		if(t == TYPE_MAPREQUEST) {
-			System.out.println("success");
-		} else {
-			eject(-128);
-		}
-		
-		int mapWidth = Unpacker.unpackInt(nn);
-		int mapHeight = Unpacker.unpackInt(nn);
-		int packetCount = Unpacker.unpackInt(nn);
-		int overallSize = Unpacker.unpackInt(nn);
-		System.out.println("w " + mapWidth + ", h " + mapHeight);
-		
-		class MapPart {
-			int n, payloadSize;
-			byte[] data;
-		}
-		Vector<MapPart> parts = new Vector<MapPart> ();
-		
-		System.out.println("downloading...");
-		int j = 0;
-		boolean haveAllLevelPackets = false;
-		while(haveAllLevelPackets == false) {
-			while(nm.receivedPackages.size() == 0) {
-				try {
-					Thread.sleep(10);
-				} catch (Exception e) {}
-			}
-			Package recvd = nm.receivedPackages.pop();
-			Unpacker.unpackString(recvd);
-			Unpacker.unpackLong(recvd);
-			int type = Unpacker.unpackByte(recvd);
-			if(type != TYPE_MAPDATA) {
-				System.out.println("discarding");
-				continue; //garbled package?!? Just ignore it~
-			}
-			int n = Unpacker.unpackInt(recvd);
-			int payloadSize = Unpacker.unpackInt(recvd); //size of payload
-			System.out.println("payload: " + payloadSize);
-			
-			MapPart mp = new MapPart();
-			mp.n = n;
-			mp.payloadSize = payloadSize;
-			mp.data = Unpacker.unpackByteArray(recvd, payloadSize);
-			parts.add(mp);
-			j++;
-			System.out.println("added, n = " + n + ", packetCount = " + packetCount);
-			if(j >= packetCount) {
-				haveAllLevelPackets = true;
-				System.out.println("finished");
-			}
-		}
-		
-		System.out.println("parsing");
-		byte[] wmap = new byte[overallSize];
-		int wmapptr = 0;
-		for(int i = 0; i < packetCount; i++) {
-			for(int k = 0; k < parts.get(i).payloadSize; k++) {
-				wmap[wmapptr++] = parts.get(i).data[k];
-			}
-			System.out.println("putted " + parts.get(i).n);
-		}
-		byte[][] map = new byte[mapWidth][mapHeight];
-		for(int row = 0; row < mapHeight; row++) {
-			for(int col = 0; col < mapWidth; col++) {
-				map[col][row] = wmap[col+row*mapWidth];
-			}
-		}
-		
-		System.out.print('\n');
 		vbuffer = new VertexBuffer(shaderFog, tileset);
-		mg.bytemap = map;
 		
 		if(useVertexBuffer)
 			mg.meshifyStatic(vbuffer, tileset);
@@ -513,7 +390,6 @@ public class GameScreen extends Screen {
 						Package recv = Main.networkManager.receivedPackages
 								.pop();
 						Unpacker.unpackString(recv);
-						Unpacker.unpackLong(recv);
 						byte tag = Unpacker.unpackByte(recv);
 						if (tag == TYPE_MOVEMENT) {
 							int cid = Unpacker.unpackInt(recv);
@@ -536,6 +412,7 @@ public class GameScreen extends Screen {
 								p.orientation = new Vector3f(0, 0, 0);
 								p.position = new Vector3f(x, y, z);
 								players.put(cid, p);
+								System.out.println("new player! " + cid);
 							}
 						}
 					}
@@ -555,7 +432,7 @@ public class GameScreen extends Screen {
 
 						p.address = serverAddr;
 						p.port = serverPort;
-						Main.networkManager.queue(p);
+						Main.networkManager.send(p);
 					}
 					try {
 						Thread.sleep(10);

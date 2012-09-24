@@ -51,7 +51,7 @@ public class OBJFile {
 					continue;
 				} else if(strLine.startsWith("o ")) {
 					name = strLine.substring(2);
-					System.out.println(name);
+					//System.out.println(name);
 				} else if(strLine.startsWith("v ")) {
 					String data = strLine.substring(2);
 					v.add(parseVector4f(data));

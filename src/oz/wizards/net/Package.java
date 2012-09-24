@@ -17,7 +17,6 @@ public class Package {
 	
 	public void fillHeader () {
 		Packer.packString(this, "MAZE");
-		Packer.packLong(this, System.currentTimeMillis());
 	}
 	
 	public void rewind () {

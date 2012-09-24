@@ -35,7 +35,7 @@ public class MazeGenerator {
 	public void print () {
 		for(int x = 0; x < bytemap[0].length; x++) {
 			for(int y = 0; y < bytemap.length; y++) {
-				System.out.print((bytemap[x][y] == 1 ? '█' : ' '));
+				System.out.print((bytemap[x][y] == 1 ? 'o' : ' '));
 			}
 			System.out.print('\n');
 		}

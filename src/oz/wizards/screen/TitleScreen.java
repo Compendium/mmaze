@@ -27,7 +27,7 @@ public class TitleScreen extends Screen {
 	@Override
 	public void create() {
 		try{
-			Display.setDisplayMode(new DisplayMode(1920, 1080));
+			Display.setDisplayMode(new DisplayMode(600, 600));
 			Display.create();
 			Display.setTitle("テスト");
 			

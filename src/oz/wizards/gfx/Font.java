@@ -88,7 +88,5 @@ public class Font {
 		char c = 'r';
 		int cy = c / 16;
 		int cx = c % 16;
-		System.out.printf("character: %c, cx: %d, cy: %d\n", c, cx, cy);
-		System.out.printf("left offset: %d, right offset: %d\n", kerningLeft[(cy*16)+cx], kerningRight[(cy*16)+cx]);
 	}
 }

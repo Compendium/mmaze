@@ -64,4 +64,12 @@ public class Network {
 	public void destroy () {
 		socket.close();
 	}
+	
+	public InetAddress getAddress () {
+		return socket.getLocalAddress();
+	}
+	
+	public int getPort () {
+		return socket.getLocalPort();
+	}
 }

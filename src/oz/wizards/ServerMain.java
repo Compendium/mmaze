@@ -26,9 +26,10 @@ public class ServerMain {
 		List<Client> clients = new Vector<Client>();
 		Network nw = new Network();
 		nw.create(4182);
+		System.out.println("bound local server to " + nw.getAddress().getHostAddress() + ":" +  nw.getPort());
 		
 		MazeGenerator mg = new MazeGenerator(16, 16);
-		mg.print();
+		System.out.println("generated new map, width: " + mg.getWidth() + ", height: " + mg.getHeight());
 		
 		while(true) {
 			nw.tick();

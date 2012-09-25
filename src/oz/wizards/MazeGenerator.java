@@ -235,6 +235,14 @@ public class MazeGenerator {
 			}
 		}
 	}
+	
+	public int getWidth () {
+		return x;
+	}
+	
+	public int getHeight () {
+		return y;
+	}
 
 	private static boolean between(int v, int upper) {
 		return (v >= 0) && (v < upper);

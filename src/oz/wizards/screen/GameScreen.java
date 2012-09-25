@@ -38,15 +38,6 @@ import oz.wizards.net.Unpacker;
 import static org.lwjgl.opengl.GL11.*;
 
 public class GameScreen extends Screen {
-	final static byte TYPE_REGISTER = 8; //new client wants to register itself
-	final static byte TYPE_UNREGISTER = 9; //clients wants to unregister itself/close connection
-	final static byte TYPE_ACKNOWLEDGE = 10; //ack the client that just connected
-	final static byte TYPE_RESEND = 11; //client wants the server to re-send a specific packet
-	final static byte TYPE_MOVEMENT = 12; //client wants to inform of movement, unimportant
-	final static byte TYPE_CHAT = 13; //client sent a chat message, important!
-	final static byte TYPE_MAPREQUEST = 64;
-	final static byte TYPE_MAPDATA = 65;	
-	
 	public static int drawCalls = 0;
 	
 	public boolean isRunning = false;
@@ -113,10 +104,6 @@ public class GameScreen extends Screen {
 		}
 		while (Keyboard.next()) {
 			if (Keyboard.getEventKeyState() == true) {
-				if (Keyboard.getEventKey() == Keyboard.KEY_RETURN) {
-					if (++model == 3)
-						model = 0;
-				}
 				if(Keyboard.getEventKey() == Keyboard.KEY_ESCAPE) {
 					this.isCloseRequested = true;
 					this.active = false;
@@ -391,7 +378,7 @@ public class GameScreen extends Screen {
 								.pop();
 						Unpacker.unpackString(recv);
 						byte tag = Unpacker.unpackByte(recv);
-						if (tag == TYPE_MOVEMENT) {
+						if (tag == NetworkManager.TYPE_MOVEMENT) {
 							int cid = Unpacker.unpackInt(recv);
 							float x = Unpacker.unpackFloat(recv);
 							float y = Unpacker.unpackFloat(recv);
@@ -421,7 +408,7 @@ public class GameScreen extends Screen {
 						timestapmPositionSend = System.nanoTime() + 6000000;
 						Package p = new Package();
 						p.fillHeader();
-						Packer.packByte(p, TYPE_MOVEMENT);
+						Packer.packByte(p, NetworkManager.TYPE_MOVEMENT);
 						Packer.packInt(p, clientId);
 						Packer.packFloat(p, translation.x);
 						Packer.packFloat(p, translation.y);
@@ -450,7 +437,7 @@ public class GameScreen extends Screen {
 		Display.destroy();
 		Package p = new Package();
 		p.fillHeader();
-		Packer.packByte(p, TYPE_UNREGISTER);
+		Packer.packByte(p, NetworkManager.TYPE_UNREGISTER);
 		Packer.packInt(p, clientId);
 		Main.networkManager.keepRunning = false;
 		

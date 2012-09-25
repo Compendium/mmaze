@@ -78,7 +78,7 @@ public class MenuScreen extends Screen implements Runnable {
 
 	@Override
 	public void update() {
-		if (Keyboard.isKeyDown(Keyboard.KEY_ESCAPE)) {
+		if (Display.isCloseRequested()) {
 			this.active = false;
 			Main.sm.setNextScreen(null);
 		}

@@ -66,7 +66,13 @@ public class TitleScreen extends Screen {
 
 	@Override
 	public void update() {
-		if(Keyboard.isKeyDown(Keyboard.KEY_ESCAPE)) active = false;
+		while(Keyboard.next()) {
+			if(Keyboard.getEventKeyState() == true) {
+				if(Keyboard.getEventKey() == Keyboard.KEY_ESCAPE) {
+					this.active = false;
+				}
+			}
+		}
 	}
 
 	@Override

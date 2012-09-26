@@ -16,6 +16,7 @@ public class Unpacker {
 	public static byte unpackByte(Package p) {
 		if(p.pointer >= p.length) {
 			System.err.println("error: trying to read beyond packet length");
+			Thread.dumpStack();
 			p.pointer++;
 			return 0;
 		}

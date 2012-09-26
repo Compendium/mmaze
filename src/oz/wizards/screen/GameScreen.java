@@ -201,18 +201,9 @@ public class GameScreen extends Screen {
 		glRotatef(rotation.x, 1, 0, 0);
 		glRotatef(rotation.y, 0, 1, 0);
 		glTranslatef(-translation.x, -translation.y, -translation.z);
+				
 		
-		shaderFog.enable();
-		//GL20.glUniform3f(uniformCameraPosition, translation.x, translation.y, translation.z);
-		
-		if (useVertexBuffer) {
-			vbuffer.render();
-		} else {
-			mg.meshifyDynamic(vb, tileset);
-			vb.render();
-		}
-		
-		
+		shaderBase.enable();
 		for(Map.Entry<Integer, Player> entry : players.entrySet()) {
 			Integer key = entry.getKey();
 			Player val = entry.getValue();
@@ -228,8 +219,22 @@ public class GameScreen extends Screen {
 			vb.render();
 			glPopMatrix();
 		}
+		shaderBase.disable();
+
+		shaderFog.enable();
+		//GL20.glUniform3f(uniformCameraPosition, translation.x, translation.y, translation.z);
+		
+		glDisable(GL_BLEND);
+		if (useVertexBuffer) {
+			vbuffer.render();
+		} else {
+			mg.meshifyDynamic(vb, tileset);
+			vb.render();
+		}
+		glEnable(GL_BLEND);
 		shaderFog.disable();
 		
+		shaderBase.enable();
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 		glMatrixMode(GL_PROJECTION);
@@ -241,7 +246,6 @@ public class GameScreen extends Screen {
 		//GLU.gluPerspective(45, ratio, 1.f, 10000.f);
 		GLU.gluOrtho2D(-ratio, +ratio, -1, +1);
 		
-		shaderBase.enable();
 		font.draw(new Vector2f(-ratio,1-0.05f), 0.005f, "mmaze");
 		font.draw(new Vector2f(-ratio,1-0.05f*2), 0.005f, "FPS: " + 1000.0/lastft);
 		font.draw(new Vector2f(-ratio, 1-0.05f*3), 0.005f, "ft: " + lastft);

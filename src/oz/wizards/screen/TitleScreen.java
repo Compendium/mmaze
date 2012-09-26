@@ -33,7 +33,7 @@ public class TitleScreen extends Screen {
 			
 			GL11.glViewport(0,0, Display.getWidth(), Display.getHeight());
 			GL11.glEnable(GL11.GL_TEXTURE_2D);
-			GL11.glDisable(GL11.GL_CULL_FACE);
+			GL11.glEnable(GL11.GL_CULL_FACE);
 			GL11.glFrontFace(GL11.GL_CCW);
 			GL11.glEnable(GL11.GL_DEPTH_TEST);
 			GL11.glEnable(GL11.GL_BLEND);

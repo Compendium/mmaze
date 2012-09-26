@@ -19,6 +19,7 @@ void main() {
 	c.r = (1.0 / exp2(dist) * 2) * c.r * 0.85f;
 	c.g = (1.0 / exp2(dist) * 2) * c.g * 0.85f;
 	c.b = (1.0 / exp2(dist) * 2) * c.b * 0.85f;
+	c.a = (1.0 / exp2(dist) * 2) * c.a * 0.85f;
 	//if(c.a < .5)
 		//discard;
 	

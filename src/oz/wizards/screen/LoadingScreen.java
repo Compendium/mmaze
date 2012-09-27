@@ -25,6 +25,14 @@ public class LoadingScreen extends Screen implements Runnable {
 	boolean isMultiplayer = true;
 	boolean isFinished = false;
 	List<Package> packages = new Vector<Package>();
+	
+	public LoadingScreen (boolean b) {
+		isMultiplayer = b;
+	}
+	
+	public LoadingScreen () {
+		this(true);
+	}
 
 	@Override
 	public void run() {
@@ -89,8 +97,15 @@ public class LoadingScreen extends Screen implements Runnable {
 	@Override
 	public void update() {
 		if (!isMultiplayer) {
-			Main.game.mg = new MazeGenerator(16, 16);
 			isFinished = true;
+			Main.game = new GameScreen();
+
+			Main.game.mg = new MazeGenerator(16, 16);
+			Main.game.clientId = clientId;
+
+			Main.sm.setNextScreen(Main.game);
+			this.active = false;
+
 		} else {
 			NetworkManager nm = Main.networkManager;
 			while (nm.receivedPackages.size() > 0) {

@@ -75,6 +75,7 @@ public class Network {
 		}
 		
 		rp.packet = baos.toByteArray();
+		rp.length = baos.size();
 		
 		lastReceivedPackage = rp;
 	}

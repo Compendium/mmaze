@@ -105,7 +105,16 @@ public class MenuScreen extends Screen implements Runnable {
 						Main.networkManagerThread.start();
 
 						
-						Main.sm.setNextScreen(new LoadingScreen());
+						Main.sm.setNextScreen(new LoadingScreen(true));
+						this.active = false;
+					} else if(currentlyHighlighted == PLAY_SINGLEPLAYER) {
+						Main.networkManager = new NetworkManager();
+						Main.networkManagerThread = new Thread(
+								Main.networkManager);
+						Main.networkManagerThread.start();
+
+						
+						Main.sm.setNextScreen(new LoadingScreen(false));
 						this.active = false;
 					}
 				}
